@@ -19,7 +19,7 @@ class Manager extends BaseController
     // ];
 
     // 不需要自动验证的方法
-    protected $excludeValidateCheck  = ['index'];
+    protected $excludeValidateCheck  = ['logout'];
 
     /**
      * 显示资源列表
@@ -28,7 +28,25 @@ class Manager extends BaseController
      */
     public function index()
     {
-        return showSuccess('hello');
+        $param = request()->param();
+        $limit = intval(getValByKey('limit', $param, 10));
+        $keyword = getValByKey('keyword', $param, '');
+        $where = [
+            ['username', 'like', '%' . $keyword . '%']
+        ];
+        $totalCount = $this->M->where($where)->count();
+        $list = $this->M->page($param['page'], $limit)
+            ->with(['role'])
+            ->where($where)
+            ->order(['id' => 'desc'])
+            ->select()
+            ->hidden(['password']);
+        $role = \app\model\Role::field(['id', 'name'])->select();
+        return showSuccess([
+            'list' => $list,
+            'totalCount' => $totalCount,
+            'role' => $role
+        ]);
     }
 
     /**
@@ -66,6 +84,40 @@ class Manager extends BaseController
      */
     public function delete($id)
     {
-        //
+        $manager = $this->request->Model;
+        // 不能删除自己
+        if ($this->request->UserModel->id === $manager->id) ApiException('不能删除自己');
+        // 不能删除管理员帐号
+        if ($manager->super === 1) ApiException('不能删除超级管理员');
+        return showSuccess($manager->delete());
+    }
+
+    // 登陆
+    public function login()
+    {
+        $user = cms_login([
+            'data' => $this->request->UserModel,
+        ]);
+        return showSuccess($user);
+    }
+
+    // 退出
+    public function logout()
+    {
+        $res = cms_logout([
+            'token' => $this->request->header('token'),
+            'password' => false
+        ]);
+        return showSuccess($res);
+    }
+
+    // 修改状态
+    public function updateStatus()
+    {
+        $manager = $this->request->Model;
+        // 不能禁用自己
+        if ($this->request->UserModel->id === $manager->id) ApiException('不能禁用自己');
+        $manager->status = $this->request->param['status'];
+        return showSuccess($manager->save());
     }
 }

@@ -11,6 +11,12 @@ use think\Model;
  */
 class Manager extends Model
 {
+    // 用户属于哪个角色 反向一对多
+    public function role()
+    {
+        return $this->belongsTo('Role');
+    }
+
     // 修改器
     public function setPasswordAttr($value, $data)
     {

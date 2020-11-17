@@ -8,7 +8,7 @@ class Index extends BaseController
 {
     public function index()
     {
-        ApiException('我是无意的');
+        ApiException('hello');
     }
 
     public function hello($name = 'ThinkPHP6')
