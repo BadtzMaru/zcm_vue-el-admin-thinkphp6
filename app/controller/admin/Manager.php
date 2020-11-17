@@ -5,9 +5,22 @@ declare(strict_types=1);
 namespace app\controller\admin;
 
 use think\Request;
+use app\BaseController;
 
-class Manager
+class Manager extends BaseController
 {
+    // 关闭自动实例化模型
+    // protected $autoModel = false;
+    // protected $modelPath = 'admin/Manager';
+
+    // 自定义验证场景
+    // protected $autoValidateScenes = [
+    //     '方法名' => '自定义场景'
+    // ];
+
+    // 不需要自动验证的方法
+    protected $excludeValidateCheck  = ['index'];
+
     /**
      * 显示资源列表
      *
@@ -15,7 +28,7 @@ class Manager
      */
     public function index()
     {
-        //
+        return showSuccess('hello');
     }
 
     /**
@@ -26,8 +39,8 @@ class Manager
      */
     public function save(Request $request)
     {
-        $M = new \app\model\Manager();
-        $res = $M->save($request->param());
+        $param = $request->only(['username', 'password', 'avatar', 'role_id', 'status']);
+        $res = $this->M->save($param);
         return showSuccess($res);
     }
 

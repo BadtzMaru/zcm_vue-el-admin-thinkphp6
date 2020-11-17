@@ -1,5 +1,6 @@
 <?php
-declare (strict_types = 1);
+
+declare(strict_types=1);
 
 namespace app;
 
@@ -50,9 +51,56 @@ abstract class BaseController
         $this->initialize();
     }
 
+    // 自动实例化模型
+    protected $M = null;
+    // 记录当前控制器相关信息
+    protected $cInfo = [];
+    // 是否自动实例化模型
+    protected $autoModel = true;
+    // 自定义模型路径
+    protected $modelPath = null;
+    // 是否开启自动验证
+    protected $autoValidate = true;
+    // 自定义验证场景
+    protected $autoValidateScenes = [];
+    // 不需要自动验证的方法
+    protected $excludeValidateCheck = [];
+
     // 初始化
     protected function initialize()
-    {}
+    {
+
+        $this->cInfo = [
+            'name' => class_basename($this),
+            'path' => str_replace('.', '\\', $this->request->controller()),
+            'action' => $this->request->action(),
+        ];
+        // 自动验证参数
+        $this->autoValidateCheck();
+        // 自动实例化模型
+        $this->getCurrentModel();
+    }
+
+    // 自动验证参数
+    protected function autoValidateCheck()
+    {
+        if ($this->autoValidate && !in_array($this->cInfo['action'], $this->excludeValidateCheck)) {
+            $V = app('app\validate\\' . $this->cInfo['path']);
+            $scene = array_key_exists($this->cInfo['action'], $this->autoValidateScenes) ? $this->autoValidateScenes[$this->cInfo['action']] : $this->cInfo['action'];
+            if (!$V->scene($scene)->check($this->request->param())) {
+                ApiException($V->getError());
+            }
+        }
+    }
+
+    // 自动实例化模型
+    protected function getCurrentModel()
+    {
+        if ($this->autoModel) {
+            $modelName = $this->modelPath ? str_replace('/', '\\', $this->modelPath)  : $this->cInfo['name'];
+            $this->M = app('app\model\\' . $modelName);
+        }
+    }
 
     /**
      * 验证数据
@@ -90,5 +138,4 @@ abstract class BaseController
 
         return $v->failException(true)->check($data);
     }
-
 }
