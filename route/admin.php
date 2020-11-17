@@ -7,4 +7,6 @@ Route::group('admin', function () {
     Route::post('manager', 'admin.Manager/save');
     // 管理员列表
     Route::get('manager/:page', 'admin.Manager/index');
+    // 更新管理员
+    Route::post('manager/:id', 'admin.Manager/update');
 });

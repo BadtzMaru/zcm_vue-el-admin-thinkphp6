@@ -53,7 +53,9 @@ class Manager extends BaseController
      */
     public function update(Request $request, $id)
     {
-        //
+        $param = $request->only(['id', 'username', 'password', 'avatar', 'role_id', 'status']);
+        $res = $request->Model->save($param);
+        return showSuccess($res);
     }
 
     /**

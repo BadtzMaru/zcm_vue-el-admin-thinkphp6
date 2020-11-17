@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace app\validate\admin;
 
-use think\Validate;
+use app\validate\BaseValidate;
 
-class Manager extends Validate
+class Manager extends BaseValidate
 {
     /**
      * 定义验证规则
@@ -15,6 +15,7 @@ class Manager extends Validate
      * @var array
      */
     protected $rule = [
+        'id|管理员ID' => 'require|integer|>:0|isExist:Manager',
         'page' => 'require|integer|>:0',
         'username' => 'require|min:5|max:20',
         'password' => 'require|min:5|max:20',
@@ -33,5 +34,6 @@ class Manager extends Validate
 
     protected $scene = [
         'save' => ['username', 'password', 'avatar', 'role_id', 'status'],
+        'update' => ['id', 'username', 'password', 'avatar', 'role_id', 'status'],
     ];
 }
